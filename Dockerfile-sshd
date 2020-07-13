@@ -1,0 +1,34 @@
+ARG BASE_CONTAINER=ubuntu:18.04
+FROM $BASE_CONTAINER
+
+MAINTAINER Morpheus (morpheus.hsieh@gmail.com)
+
+# Update, Upgrade and Install packages
+USER root
+RUN echo 'root:1234' | chpasswd
+RUN apt-get update && apt-get install -y openssh-server sudo
+
+# Add new user
+ARG UNAME=user
+RUN useradd -G sudo -m -s /bin/bash $UNAME
+RUN echo "$UNAME:1234" | chpasswd
+
+# Setup SSH service
+RUN mkdir -p /var/run/sshd
+RUN sed -i 's/#\?PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#\?PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#\?PermitEmptyPasswords no/PermitEmptyPasswords no/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+ARG WORK_DIR=work
+RUN mkdir /home/$UNAME/$WORK_DIR
+RUN chown "$UNAME:$UNAME" /home/$UNAME/$WORK_DIR
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
