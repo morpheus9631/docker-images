@@ -1,2 +1,2 @@
-# SSHD
-A docker image of Ubuntu 18.04 with sshd service. 
+# SSHD docke rimage
+Ubuntu 18.04 with sshd service Installed.
