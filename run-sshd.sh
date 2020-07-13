@@ -5,5 +5,5 @@ docker run --rm -d \
 --name sshd-u1804 \
 morpheus9631/sshd:v1.0
 
-echo -e '\n'
+echo ''
 docker  ps
