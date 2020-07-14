@@ -1,0 +1,19 @@
+ARG BASE_CONTAINER=test/cuda:10.1-base
+FROM $BASE_CONTAINER
+
+MAINTAINER Morpheus9631 (morpheus.hsieh@gmail.com)
+
+USER root
+
+# Install Nvidia runtime
+ENV NCCL_VERSION 2.4.8
+
+RUN apt-get update && apt-get install -y --no-install-recommends\
+ cuda-libraries-10-1=$CUDA_VERSION-1\
+ cuda-nvtx-10-1=$CUDA_VERSION-1\
+ libcublas10=10.2.1.243-1\
+ libnccl2=$NCCL_VERSION-1+cuda10.1 &&\
+ apt-mark hold libnccl2 && rm -rf /var/lib/apt/lists/*
+
+RUN echo 'export NCCL_VERSION="'$NCCL_VERSION'"' >> /etc/profile
+
