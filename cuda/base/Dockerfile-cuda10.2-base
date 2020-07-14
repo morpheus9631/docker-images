@@ -1,0 +1,60 @@
+FROM ubuntu:18.04
+
+MAINTAINER Morpheus <morpheus.hsieh@gmail.com>
+
+# Fix DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+USER root
+RUN echo 'root:1234' | chpasswd
+
+# Install nvidia repository
+#
+RUN apt-get update && apt-get install -y --no-install-recommends\
+ gnupg2 curl ca-certificates &&\
+ curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - &&\
+ echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list &&\
+ echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list &&\
+ rm -rf /var/lib/apt/lists/*
+
+ENV CUDA_VERSION 10.2.89
+ENV CUDA_PATH /usr/local/cuda
+
+# For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
+RUN apt-get update && apt-get install -y --no-install-recommends\
+ cuda-cudart-10-2=$CUDA_VERSION-1\
+ cuda-compat-10-2 &&\
+ ln -s cuda-10.2 /usr/local/cuda &&\
+ rm -rf /var/lib/apt/lists/*
+
+#RUN echo "export "
+RUN echo 'export CUDA_VERSION="'$CUDA_VERSION'"' >> /etc/profile
+RUN echo 'export CUDA_PATH="'$CUDA_PATH'"' >> /etc/profile
+RUN echo 'export PATH="'$CUDA_PATH'/bin:$PATH"' >> /etc/profile
+
+#
+# Setup SSH Service
+#
+RUN apt-get update && apt-get install -yq --no-install-recommends \
+    sudo openssh-server \
+ && rm -rf /var/lib/apt/lists/*
+
+# Add new user
+ARG UNAME=user
+RUN useradd -G sudo -m -s /bin/bash $UNAME
+RUN echo "$UNAME:1234" | chpasswd
+
+# Setup SSH service
+RUN mkdir -p /var/run/sshd
+RUN sed -i 's/#\?PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#\?PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#\?PermitEmptyPasswords no/PermitEmptyPasswords no/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+ENV NOTVISIBLE "in users profile"
+RUN echo 'export VISIBLE=now' >> /etc/profile
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
