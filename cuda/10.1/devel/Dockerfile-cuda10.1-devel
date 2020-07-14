@@ -1,4 +1,4 @@
-ARG BASE_CONTAINER=test/cuda:10.1-runtime
+ARG BASE_CONTAINER=morpheus9631/cuda:10.1-runtime
 FROM $BASE_CONTAINER
 
 MAINTAINER Morpheus9631 (morpheus.hsieh@gmail.com)
