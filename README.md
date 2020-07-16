@@ -6,3 +6,8 @@ Docker Image: Ubuntu 18.04 + CUDA + Runtime + Developer + cuDNN</br>
 Reference:</br>
 &ensp;[1] Nvidia Gitlab, online: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/doc/supported-tags.md</br>
 &ensp;[2] Nvidia dockerhub, online:https://hub.docker.com/r/nvidia/cuda</br>
+
+# Test
+  $ nvidai-smi
+  $ nvcc --version
+
