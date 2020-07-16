@@ -8,6 +8,6 @@ Reference:</br>
 &ensp;[2] Nvidia dockerhub, online:https://hub.docker.com/r/nvidia/cuda</br>
 
 # Test
-  $ nvidai-smi
+  $ nvidai-smi</br>
   $ nvcc --version
 
